@@ -249,9 +249,9 @@ deps.d
 - [6502 Addressing Modes](http://www.emulator101.com/6502-addressing-modes.html)
 
 ### NES/NSF Documentation
-- [NES APU Reference](https://wiki.nesdev.com/w/index.php/APU)
-- [NSF Format Specification](https://wiki.nesdev.com/w/index.php/NSF)
-- [NES Memory Map](https://wiki.nesdev.com/w/index.php/CPU_memory_map)
+- [NES APU Reference](https://www.nesdev.org/wiki/APU)
+- [NSF Format Specification](https://www.nesdev.org/wiki/NSF)
+- [NES Memory Map](https://www.nesdev.org/wiki/CPU_memory_map)
 
 ### Web Audio API
 - [MDN Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API)
