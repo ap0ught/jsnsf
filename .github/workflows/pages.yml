@@ -20,10 +20,10 @@ jobs:
     
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
     
     - name: Set up Java
-      uses: actions/setup-java@e6c7e6e7e1e7e2e6e7e1e7e2e6e7e1e7e2e6e7e1e7e2e6e7e1e7e2e6e7e1e7e2
+      uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4
       with:
         distribution: 'temurin'
         java-version: '17'
@@ -46,12 +46,12 @@ jobs:
       run: make
     
     - name: Setup Pages
-      uses: actions/configure-pages@v5
+      uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
     
     - name: Upload artifact
-      uses: actions/upload-pages-artifact@b4a0d1e2e6e6e2e1e6e2e1e6e2e1e6e2e1e6e2e1
+      uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
       with:
-        path: 'dist'
+        path: '.'
   
   deploy:
     environment:
@@ -62,4 +62,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@e1c1b1b2e6e6e2c1b1b2e6e6e2c1b1b2e6e6e2c1b1b2 # v4.0.0 (replace with actual SHA)
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
