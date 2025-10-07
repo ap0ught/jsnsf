@@ -51,7 +51,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-pages-artifact@b4a0d1e2e6e6e2e1e6e2e1e6e2e1e6e2e1e6e2e1
       with:
-        path: '.'
+        path: 'dist'
   
   deploy:
     environment:
