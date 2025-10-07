@@ -1,0 +1,65 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    
+    - name: Install Perl
+      run: sudo apt-get update && sudo apt-get install -y perl
+    
+    - name: Download Google Closure Compiler
+      run: |
+        mkdir -p ~/Downloads
+        wget -O ~/Downloads/compiler.jar https://repo1.maven.org/maven2/com/google/javascript/closure-compiler/v20231112/closure-compiler-v20231112.jar
+    
+    - name: Make deps.pl executable
+      run: chmod +x deps.pl
+    
+    - name: Generate dependencies
+      run: ./deps.pl '!' -path './scraps/\*'
+    
+    - name: Build project
+      run: make
+    
+    - name: Setup Pages
+      uses: actions/configure-pages@v5
+    
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: '.'
+  
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
