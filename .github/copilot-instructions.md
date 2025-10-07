@@ -1,7 +1,7 @@
 # Copilot Instructions for JsNsf
 
 ## Project Overview
-JsNsf is a JavaScript NSF (Nintendo Sound Format) player that emulates the 8-bit Nintendo's 6502 processor and APU sound chip to play chiptunes written for this system.
+JsNsf is a JavaScript NSF (Nintendo Sound Format) player that emulates the 8-bit Nintendo 6502 processor and APU sound chip to play chiptunes written for this system.
 
 ## Project Structure
 - `cpu.js` - Emulates the 6502 CPU with instruction set implementation
