@@ -71,7 +71,9 @@ See [UPSTREAM_ISSUES.md](UPSTREAM_ISSUES.md) for more details.
 
 ## Contributing
 
-Contributions are welcome! Please see [README.dev](README.dev) for development setup instructions.
+Contributions are welcome! Please see:
+- [CONTRIBUTION_GUIDE.md](CONTRIBUTION_GUIDE.md) for contribution guidelines and upstream relationship
+- [README.dev](README.dev) for development setup instructions
 
 ## License
 
