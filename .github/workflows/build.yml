@@ -48,7 +48,7 @@ jobs:
         fi
     
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@3b4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d
       with:
         name: compiled-js
         path: |
