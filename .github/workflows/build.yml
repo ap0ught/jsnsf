@@ -1,0 +1,57 @@
+name: Build
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+    
+    - name: Set up Java
+      uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    
+    - name: Install Perl
+      run: sudo apt-get update && sudo apt-get install -y perl
+    
+    - name: Download Google Closure Compiler
+      run: |
+        mkdir -p ~/Downloads
+        wget -O ~/Downloads/compiler.jar https://repo1.maven.org/maven2/com/google/javascript/closure-compiler/v20231112/closure-compiler-v20231112.jar
+    
+    - name: Make deps.pl executable
+      run: chmod +x deps.pl
+    
+    - name: Generate dependencies
+      run: ./deps.pl '!' -path './scraps/\*'
+    
+    - name: Build project
+      run: make
+    
+    - name: Check build artifacts
+      run: |
+        if [ -f nes.compiled.js ]; then
+          echo "Build successful: nes.compiled.js created"
+          ls -lh nes.compiled.js
+        else
+          echo "Build failed: nes.compiled.js not found"
+          exit 1
+        fi
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      with:
+        name: compiled-js
+        path: |
+          *.compiled.js
+          *.srcmap
+        retention-days: 30
