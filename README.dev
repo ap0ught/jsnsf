@@ -1,0 +1,285 @@
+# JsNsf Development Guide
+
+This document provides detailed information for developers working on the JsNsf project.
+
+## Prerequisites
+
+- **Java Runtime Environment (JRE)**: Required for Google Closure Compiler
+- **Perl**: Required for the dependency management script (`deps.pl`)
+- **make**: Required for building the project
+- A modern web browser for testing
+
+## Project Architecture
+
+### Core Components
+
+#### CPU Emulation (`cpu.js`)
+- Implements the 6502 processor instruction set
+- Handles opcodes, addressing modes, and CPU flags
+- Manages program counter, stack pointer, and registers (A, X, Y)
+
+**Key Classes:**
+- `Cpu`: Main CPU emulator class
+- `Opcode`: Represents a single CPU instruction
+- `Mode`: Addressing mode implementation
+
+#### Memory Management (`mem.js`)
+- Handles memory reads/writes
+- Provides memory listeners for I/O operations
+- Manages memory-mapped I/O regions
+
+#### APU (Audio Processing Unit)
+The APU consists of several components:
+
+- **Pulse Channels** (`apu/pulse.js`): Two channels with duty cycle control, envelope, and sweep
+- **Triangle Channel** (`apu/triangle.js`): Linear counter and frequency control
+- **Noise Channel** (`apu/noise.js`): Pseudo-random noise generator
+- **Envelope Generator** (`apu/envelope.js`): Volume envelope control
+- **Length Counter** (`apu/lengthcounter.js`): Note duration control
+- **Resampler** (`apu/resampler.js`): Sample rate conversion with kernel-based filtering
+
+#### Audio Output
+- **BufferedAudioNode** (`audio/bufferedaudionode.js`): Manages audio buffering for Web Audio API
+- **StepGeneratorNode** (`audio/stepgeneratornode.js`): Generates waveforms from step functions
+
+#### NSF File Handling
+- **NSF Parser** (`nsf.js`): Parses NSF file format and metadata
+- **NSFPlayer** (`nsfplayer.js`): Orchestrates playback, manages CPU and APU
+
+#### Bank Switching (`bankswitcher.js`)
+- Implements memory bank switching for NSF files
+- Supports standard NSF and FDS (Famicom Disk System) bank switching
+
+## Build System
+
+### Overview
+
+The build system uses:
+1. **deps.pl**: Perl script that analyzes JavaScript imports and generates build dependencies
+2. **Makefile**: Defines build targets and invokes Google Closure Compiler
+3. **Google Closure Compiler**: Compiles and optimizes JavaScript
+
+### Build Process
+
+```bash
+# Generate dependency file
+./deps.pl '!' -path './scraps/\*'
+
+# Build the main output
+make
+```
+
+### Build Targets
+
+Build targets are defined using special comments in source files:
+
+```javascript
+//@ output.compiled.js --checkTypes=warning
+```
+
+This tells the build system to:
+- Generate `output.compiled.js` from this file and its dependencies
+- Enable type checking with warning level
+
+### Dependency Management
+
+The `deps.pl` script:
+1. Scans all `.js` files (excluding `scraps/` directory)
+2. Parses ES6 import statements to build a dependency graph
+3. Generates `deps.d` makefile with proper dependencies
+4. Ensures files are compiled in topological order
+
+### Source Maps
+
+The build system automatically generates source maps (`.srcmap` files) for debugging compiled code.
+
+## Coding Standards
+
+### Code Style
+
+- **Module System**: ES6 modules (`import`/`export default`)
+- **Type Annotations**: JSDoc comments for type information
+  - Non-null types: `{!Type}`
+  - Optional parameters: `@param {Type=}`
+  - Return types: `@return {Type}`
+- **Naming Conventions**:
+  - Variables/methods: camelCase
+  - Classes: PascalCase
+  - Private members: trailing underscore (`this.member_`)
+- **Variable Declarations**:
+  - Use `const` for immutable values
+  - Use `let` for mutable values
+  - Avoid `var`
+- **String Interpolation**: Use template literals
+
+### JSDoc Example
+
+```javascript
+/**
+ * Check if a jump occurred on the same or different page.
+ * @param {number} addr The target address
+ * @return {number} The input address
+ * @private
+ */
+checkBranch_(addr) {
+  // implementation
+}
+```
+
+### Comments
+
+- Add comments only when they provide value beyond the code itself
+- Match the style of existing comments in the file
+- Explain "why" rather than "what" when possible
+
+## Testing
+
+### Manual Testing
+
+1. **Basic Playback Test**:
+   ```bash
+   # Start a local web server (Python example)
+   python3 -m http.server 8000
+   ```
+   
+2. Open `http://localhost:8000/index.html` in a browser
+3. Load an NSF file and verify playback
+4. Test individual channel enable/disable
+
+### Test Files
+
+- `test4.html` / `test4.js`: Additional test interface
+- `scraps/`: Experimental code and test cases (not included in builds)
+
+### Emulation Accuracy
+
+When making changes to CPU or APU:
+- Verify cycle counts are accurate
+- Test with known NSF files
+- Check timing-sensitive behavior
+- Ensure memory addresses match NES hardware (e.g., `0x4015` for APU status)
+
+## Common Development Tasks
+
+### Adding a New CPU Instruction
+
+1. Add the instruction implementation to `cpu.js`
+2. Add it to the instruction table (see `instructionTable()` function)
+3. Test with NSF files that use the instruction
+
+### Modifying APU Behavior
+
+1. Locate the relevant APU component (pulse, triangle, noise, etc.)
+2. Make changes while maintaining cycle accuracy
+3. Test audio output for artifacts or glitches
+
+### Adding a New Feature
+
+1. Create feature branch
+2. Implement with minimal changes
+3. Update documentation if needed
+4. Test thoroughly before committing
+
+## Debugging
+
+### CPU Debugging
+
+The CPU emulator includes debug logging capabilities:
+- Enable by uncommenting debug lines in `cpu.js`
+- Logs show PC (program counter), registers, and executed instructions
+
+### Memory Debugging
+
+- Use memory listeners to track reads/writes to specific addresses
+- Check the `memlog` div in `index.html` for memory access logs
+
+### Audio Debugging
+
+- Enable individual channels to isolate issues
+- Check browser console for audio context errors
+- Verify sample rate and buffer settings
+
+## File Organization
+
+### What Goes Where
+
+- **Core emulation**: Root directory (`cpu.js`, `mem.js`, etc.)
+- **APU components**: `apu/` directory
+- **Audio output**: `audio/` directory
+- **Utilities**: `util/` directory
+- **Experimental/scratch**: `scraps/` directory (excluded from builds)
+- **Build artifacts**: `*.compiled.js`, `*.srcmap` (generated, not committed)
+
+### .gitignore
+
+Build artifacts are excluded:
+```
+*.compiled.js
+*.srcmap
+deps.d
+```
+
+## Troubleshooting
+
+### Build Issues
+
+**Problem**: `deps.pl` fails
+- Solution: Ensure Perl is installed and the script is executable (`chmod +x deps.pl`)
+
+**Problem**: Closure Compiler not found
+- Solution: Download from https://developers.google.com/closure/compiler and update `JSCOMP` path in `Makefile`
+
+**Problem**: "find: command not found"
+- Solution: Ensure GNU findutils is installed
+
+### Runtime Issues
+
+**Problem**: "Cannot write to immediate value"
+- Cause: Attempting to write to an accumulator or immediate addressing mode
+- Solution: Check addressing mode implementation in affected instruction
+
+**Problem**: Audio glitches or silence
+- Check: Audio context state, sample rate settings, buffer underruns
+- Solution: Verify APU register writes and timing
+
+## Resources
+
+### 6502 Documentation
+- [6502 Instruction Set](http://www.obelisk.me.uk/6502/reference.html)
+- [6502 Addressing Modes](http://www.emulator101.com/6502-addressing-modes.html)
+
+### NES/NSF Documentation
+- [NES APU Reference](https://www.nesdev.org/wiki/APU)
+- [NSF Format Specification](https://www.nesdev.org/wiki/NSF)
+- [NES Memory Map](https://www.nesdev.org/wiki/CPU_memory_map)
+
+### Web Audio API
+- [MDN Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API)
+
+## Contributing
+
+When contributing to this project:
+1. Follow the coding standards outlined above
+2. Maintain emulation accuracy
+3. Write clear commit messages
+4. Test changes thoroughly
+5. Consider contributing fixes back to upstream (shicks/jsnsf)
+
+## Upstream Sync
+
+This fork tracks the upstream repository at [shicks/jsnsf](https://github.com/shicks/jsnsf).
+
+To sync with upstream:
+```bash
+# Add upstream remote (if not already added)
+git remote add upstream https://github.com/shicks/jsnsf.git
+
+# Fetch upstream changes
+git fetch upstream
+
+# Merge or rebase as appropriate
+git merge upstream/master
+```
+
+See [UPSTREAM_ISSUES.md](UPSTREAM_ISSUES.md) for known upstream issues.
+
